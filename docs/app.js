@@ -8,7 +8,7 @@
  * every change is a commit you can see in the history.
  */
 
-const REPO = { owner: 'toniilein', name: 'workforce', branch: 'main', dir: 'tasks' };
+const REPO = { owner: 'Lionscraft-io', name: 'workforce', branch: 'main', dir: 'tasks' };
 
 // The workflow, left to right:
 //   Backlog -> Weekly -> Focus -> Review (what a bot handed back) -> Done

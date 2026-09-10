@@ -33,7 +33,7 @@ const PUBLIC_DIR = path.join(__dirname, 'docs');
 const PORT = process.env.PORT || 3000;
 
 const REPO = {
-  owner: process.env.REPO_OWNER || 'toniilein',
+  owner: process.env.REPO_OWNER || 'Lionscraft-io',
   name: process.env.REPO_NAME || 'workforce',
   branch: process.env.REPO_BRANCH || 'main',
   dir: process.env.TASKS_DIR || 'tasks',

@@ -11,7 +11,7 @@ in those files. Write the file and the board changes for everyone, live.
 
 | | |
 | --- | --- |
-| Repo | `toniilein/workforce`, branch `main` |
+| Repo | `Lionscraft-io/workforce`, branch `main` |
 | Task folder | `tasks/` |
 | Attachments | `attachments/<task-id>/` |
 | Your id | `007` (shows on the board as "Pookachu Bot") |
@@ -197,7 +197,7 @@ PUT $BOARD/api/files/LC-007/report.pdf
 
 ## Calls — straight to GitHub
 
-**List:** `GET https://api.github.com/repos/toniilein/workforce/contents/tasks`
+**List:** `GET https://api.github.com/repos/Lionscraft-io/workforce/contents/tasks`
 Returns `name`, `sha` and `download_url` per entry. Ignore `README.md`.
 
 **Read one:** fetch its `download_url` (plain text, no auth needed — the repo is public), or
@@ -206,7 +206,7 @@ Returns `name`, `sha` and `download_url` per entry. Ignore `README.md`.
 **Write:**
 
 ```
-PUT https://api.github.com/repos/toniilein/workforce/contents/tasks/LC-007.md
+PUT https://api.github.com/repos/Lionscraft-io/workforce/contents/tasks/LC-007.md
 { "message": "task: LC-007 → review",
   "content": "<the WHOLE new file, base64-encoded UTF-8>",
   "sha": "<the sha you just read>",

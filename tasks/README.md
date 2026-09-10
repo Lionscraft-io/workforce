@@ -1,7 +1,7 @@
 # Tasks
 
 One task per file. Every `.md` file in this folder (except this README) is a card on the board at
-the lc_kanban board (or https://toniilein.github.io/workforce/docs/)
+the lc_kanban board (or https://lionscraft-io.github.io/workforce/docs/)
 
 ## Format
 

@@ -101,7 +101,7 @@ that works on your phone. Codespaces stop when idle, so this is for working on i
 
 ## Deploying to Replit
 
-1. Create a Repl → **Import from GitHub** (`toniilein/workforce`).
+1. Create a Repl → **Import from GitHub** (`Lionscraft-io/workforce`).
 2. Add a **PostgreSQL** database (Tools → Database). Replit sets `DATABASE_URL` automatically; the app
    picks it up and creates its table on first run.
 3. `.replit` is already set up: it runs `npm install` (for the `postgres` package) then `node server.js`,
