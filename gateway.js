@@ -532,8 +532,10 @@ server.listen(PORT, () => {
 // is present; without one the board runs exactly as before. It talks to the
 // board over HTTP like any other agent, so the guard rails apply to it too.
 function startAgent() {
-  if (!process.env.HERMES_API_KEY || process.env.AGENT_AUTORUN === '0') {
-    console.log('agent: off (set HERMES_API_KEY to run Pookachu Bot alongside the board)');
+  // Opt-in. The team's working agent is a Telegram bot that lives outside this
+  // repo; running this one too would put two bots on the board as 007.
+  if (!process.env.HERMES_API_KEY || process.env.AGENT_AUTORUN !== '1') {
+    console.log('agent: off (built-in agent starts only with HERMES_API_KEY and AGENT_AUTORUN=1)');
     return;
   }
   let delay = 5_000;
