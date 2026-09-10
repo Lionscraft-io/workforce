@@ -6,7 +6,7 @@
 <title>PookieWookie</title>
 <!-- ?v= is bumped on every change: GitHub Pages caches assets for 10 minutes,
      so without it the browser keeps running the previous app.js. -->
-<link rel="stylesheet" href="./styles.css?v=73" />
+<link rel="stylesheet" href="./styles.css?v=74" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%233c4433'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23f7f5ec' font-family='Georgia'>P</text></svg>" />
 </head>
 <body>
@@ -34,6 +34,7 @@
       <button id="btn-connect" class="side-link">Connect GitHub</button>
       <button id="btn-refresh" class="side-link">Refresh</button>
       <a id="repo-link" class="side-link" target="_blank" rel="noopener">Files</a>
+      <button id="btn-lock" class="side-link" title="Forget the board password on this browser">Lock</button>
       <span id="live" class="live off" title="Read-only"></span>
     </div>
   </aside>
@@ -200,6 +201,17 @@
   </div>
 </div>
 
+<!-- lock screen: shown when the gateway wants a password and this browser has none -->
+<div id="lock" class="modal lock" hidden>
+  <form id="lock-form" class="modal-card lock-card" action="#" method="post">
+    <h2>PookieWookie</h2>
+    <p class="muted small">This board is private. Enter the board password once; this browser remembers it.</p>
+    <input id="lock-input" name="password" type="password" autocomplete="current-password" placeholder="Board password" aria-label="Board password" />
+    <div id="lock-error" class="token-error" hidden></div>
+    <div class="modal-actions"><span class="spacer"></span><button type="submit" class="primary small">Open board</button></div>
+  </form>
+</div>
+
 <!-- quick "who is responsible" picker, opened by clicking a card's avatar -->
 <div id="assign-menu" class="assign-menu" hidden></div>
 
@@ -207,7 +219,7 @@
 
 <div id="scrim" class="scrim" hidden></div>
 
-<script src="./github.js?v=73"></script>
-<script src="./app.js?v=73"></script>
+<script src="./github.js?v=74"></script>
+<script src="./app.js?v=74"></script>
 </body>
 </html>

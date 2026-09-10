@@ -317,6 +317,14 @@ async function handle(req, res) {
 
   // Just the file names and their shas: one GitHub call, enough to tell whether
   // anything changed without downloading every task on a timer.
+  // With a password set, reading the board needs it as much as writing does:
+  // the tasks are the private part. /api/config stays open — it only says
+  // whether a password is required, which the lock screen needs to know.
+  if ((p === '/api/tasks/state' || p === '/api/tasks') && req.method === 'GET') {
+    if (!passwordOk(req.headers['x-board-password']))
+      return send(res, 401, { error: PASSWORD ? 'This board needs its password.' : 'Wrong board password.' });
+  }
+
   if (p === '/api/tasks/state' && req.method === 'GET') {
     try {
       if (LOCAL_MODE)

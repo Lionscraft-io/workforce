@@ -1268,3 +1268,8 @@ body.sidebar-off .sidebar {
 
 /* A task file with two frontmatter blocks: the card is showing stale fields. */
 .malformed-badge { color: #b4544a; font-size: 13px; cursor: help; }
+
+/* The lock screen: the token dialog's card, centred, nothing behind it worth seeing. */
+.modal.lock { background: var(--bg); }
+.lock-card { max-width: 380px; }
+.lock-card input { width: 100%; height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; margin: 10px 0 4px; font-size: 16px; }

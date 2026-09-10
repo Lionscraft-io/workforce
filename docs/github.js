@@ -35,6 +35,9 @@ async function detectGateway() {
   }
 }
 
+// Every call to the gateway carries the board password when one is stored.
+const passwordHeader = () => (boardPassword.value ? { 'X-Board-Password': boardPassword.value } : {});
+
 const PASSWORD_KEY = 'board.gateway.password';
 const boardPassword = {
   get value() {

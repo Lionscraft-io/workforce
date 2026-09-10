@@ -101,7 +101,8 @@ const editUrl = (file) =>
 async function loadTasks() {
   // Through the gateway the server has already read the files for us.
   if (gateway.active) {
-    const res = await fetch('./api/tasks');
+    const res = await fetch('./api/tasks', { headers: passwordHeader() });
+    if (res.status === 401) throw Object.assign(new Error('locked'), { locked: true });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || `Server returned ${res.status}`);
     return body.tasks
@@ -173,7 +174,8 @@ function readIsStale(state) {
 
 async function fetchState() {
   if (gateway.active) {
-    const res = await fetch('./api/tasks/state');
+    const res = await fetch('./api/tasks/state', { headers: passwordHeader() });
+    if (res.status === 401) throw Object.assign(new Error('locked'), { locked: true });
     if (!res.ok) throw new Error(`state check failed (${res.status})`);
     return (await res.json()).state;
   }
@@ -219,7 +221,12 @@ async function pollChanges() {
       }
     }
     render();
-  } catch {
+  } catch (err) {
+    if (err?.locked) {
+      boardPassword.value = '';
+      showLock('The board password changed — enter the new one.');
+      return;
+    }
     /* offline or rate-limited: stay quiet and try again next tick */
   }
 }
@@ -2167,14 +2174,49 @@ on('#d-file-input', 'change', (e) => {
 
 on('#d-delete', 'click', () => requestDelete(openFile));
 
+// One password for the whole board. It lives in this browser only, is sent
+// on every gateway call, and a wrong or missing one brings the lock screen
+// back rather than an error in the corner.
+function showLock(message) {
+  const lock = $('#lock');
+  if (!lock) return;
+  $('#lock-error').textContent = message || '';
+  $('#lock-error').hidden = !message;
+  lock.hidden = false;
+  $('#lock-input').value = '';
+  setTimeout(() => $('#lock-input').focus(), 0);
+}
+function hideLock() {
+  const lock = $('#lock');
+  if (lock) lock.hidden = true;
+}
+on('#lock-form', 'submit', (e) => {
+  e.preventDefault();
+  boardPassword.value = $('#lock-input').value;
+  hideLock();
+  start();
+});
+on('#btn-lock', 'click', () => {
+  boardPassword.value = '';
+  tasks = [];
+  render();
+  showLock();
+});
+
 async function start() {
   try {
     if (!gateway.active) await detectGateway();
+    if (gateway.needsPassword && !boardPassword.value) return showLock();
     $('#board').replaceChildren(el('div', 'muted', 'Loading from GitHub…'));
     tasks = await loadTasks();
     render();
     startPolling();
   } catch (err) {
+    if (err.locked) {
+      const hadOne = Boolean(boardPassword.value);
+      boardPassword.value = '';
+      return showLock(hadOne ? 'That password was not accepted.' : '');
+    }
     $('#board').innerHTML = '';
     $('#board').appendChild(el('div', 'muted', err.message));
     renderConnection();
