@@ -1,7 +1,7 @@
 # Tasks
 
-One task per file. Every `.md` file in this folder (except this README) is a card on the board at
-the lc_kanban board (or https://lionscraft-io.github.io/workforce/docs/)
+One task per file. Every `.md` file in this folder (except this README) is a card on the board.
+The files live at https://github.com/Lionscraft-io/workforce/tree/main/tasks; the board itself runs on Replit.
 
 ## Format
 
