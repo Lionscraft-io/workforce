@@ -122,18 +122,3 @@ starts holding work you can't recreate.
 Each agent needs three things: the board URL, its `X-Actor` id, and (if set) the `X-API-Key`.
 Hand it [AGENTS.md](AGENTS.md) — that file is written to be dropped straight into an agent's prompt or
 `CLAUDE.md`.
-
-## Pookachu Bot — the Hermes agent
-
-`agent.js` works the tasks assigned to `007` using a Hermes model. Set `HERMES_API_KEY` and
-the gateway runs it alongside the board; nothing else changes. What it may and may not do,
-and how to run it by hand, is in [BOT.md](BOT.md#running-pookachu-bot-on-a-hermes-model).
-
-| Variable | Default | |
-| --- | --- | --- |
-| `HERMES_API_KEY` | — | required, from your Hermes Cloud dashboard |
-| `HERMES_BASE_URL` | `https://inference-api.nousresearch.com/v1` | confirm in the dashboard |
-| `HERMES_MODEL` | `Hermes-4-70B` | confirm in the dashboard |
-| `AGENT_INTERVAL` | `300` | seconds between passes |
-| `AGENT_TASKS_PER_PASS` | `3` | |
-| `AGENT_AUTORUN` | `1` | `0` keeps the key but does not start the agent |
