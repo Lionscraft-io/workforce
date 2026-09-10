@@ -21,6 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
 
 try {
   process.loadEnvFile();
@@ -523,4 +524,30 @@ server.listen(PORT, () => {
         : 'source: GitHub, NO TOKEN — read-only'
   );
   console.log(PASSWORD ? 'access: password required for changes' : 'access: open (set BOARD_PASSWORD to lock)');
+  startAgent();
 });
+
+// Replit runs one command, so the agent rides along as a child of the gateway
+// rather than needing a second machine. It is only started when a Hermes key
+// is present; without one the board runs exactly as before. It talks to the
+// board over HTTP like any other agent, so the guard rails apply to it too.
+function startAgent() {
+  if (!process.env.HERMES_API_KEY || process.env.AGENT_AUTORUN === '0') {
+    console.log('agent: off (set HERMES_API_KEY to run Pookachu Bot alongside the board)');
+    return;
+  }
+  let delay = 5_000;
+  const launch = () => {
+    const child = spawn(process.execPath, [path.join(__dirname, 'agent.js'), '--loop'], {
+      env: { ...process.env, BOARD_URL: process.env.BOARD_URL || `http://localhost:${PORT}` },
+      stdio: 'inherit',
+    });
+    console.log(`agent: running as pid ${child.pid}`);
+    child.on('exit', (code) => {
+      console.log(`agent: exited (${code}); restarting in ${delay / 1000}s`);
+      setTimeout(launch, delay);
+      delay = Math.min(delay * 2, 300_000);
+    });
+  };
+  launch();
+}
