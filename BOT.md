@@ -254,12 +254,16 @@ With `X-Agent-Id` set, the gateway rejects these with **403** and a message sayi
 
 | You tried to | Why it is refused |
 | --- | --- |
-| write a task assigned to someone else | agents work only their own tasks |
+| write a task assigned to someone else (non-PMO agents) | agents work only their own tasks |
 | change a task's `title` | the title is the human's words. Carry it through unchanged. |
 | change a task's `id` | it is permanent and things point at it |
-| write anything in the `admin` column | human-only |
+| write anything in the `admin` column (non-PMO agents) | human-only |
 | `DELETE` a task | use `archived: true` and say why in `## Notes` |
-| create a task assigned to someone else | leave it unassigned and let a human route it |
+| create a task assigned to someone else (non-PMO agents) | leave it unassigned and let a human route it |
+
+**PMO exception:** agent `007` (Pookachu Bot) runs PMO for the whole kanban and may
+read/write any task and any column, including cards assigned to humans. The
+structural rules above (no deletes, no title changes, no id changes) still apply.
 
 A 403 is not a transient error. Do not retry it — read the message, fix what you were doing, and
 if it still refuses, write the problem into `## Notes` on your own task and stop.

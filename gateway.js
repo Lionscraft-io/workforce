@@ -177,9 +177,17 @@ async function readTaskText(file) {
   }
 }
 
+// Agents with PMO rights may manage any task on the board, not only their own.
+// 007 (Pookachu Bot) runs PMO for the whole kanban (set by Adi/Toni, 2026-09-14).
+// Everyone else keeps the "own tasks only" rule. The structural guardrails
+// below — no deletes, no renames, no id changes — apply to every agent,
+// including PMO: accidental damage is exactly what this check catches.
+const PMO_AGENTS = new Set(['007']);
+
 // Returns an error message when an agent may not make this write, else null.
 async function agentRefusal(agentId, file, method, nextText) {
   const current = await readTaskText(file);
+  const isPmo = PMO_AGENTS.has(agentId);
 
   if (method === 'DELETE') {
     return current
@@ -190,18 +198,18 @@ async function agentRefusal(agentId, file, method, nextText) {
   const next = frontmatter(nextText);
 
   if (!current) {
-    // Creating is allowed, but it has to be the agent's own work to pick up.
-    if (next.assignee && next.assignee !== agentId)
+    // Creating is allowed; PMO may assign to anyone, others to themselves.
+    if (next.assignee && next.assignee !== agentId && !isPmo)
       return `A new task must be assigned to you (${agentId}) or left unassigned.`;
-    if (next.status === 'admin') return 'The admin column is human-only.';
+    if (next.status === 'admin' && !isPmo) return 'The admin column is human-only.';
     return null;
   }
 
   const before = frontmatter(current);
 
-  if ((before.assignee || '') !== agentId)
+  if ((before.assignee || '') !== agentId && !isPmo)
     return `${file} is assigned to ${before.assignee || 'nobody'}, not to you (${agentId}). Agents only work their own tasks.`;
-  if (before.status === 'admin' || next.status === 'admin')
+  if ((before.status === 'admin' || next.status === 'admin') && !isPmo)
     return 'The admin column is human-only.';
   if ((before.title || '') !== (next.title || ''))
     return `Agents do not rename tasks. Leave title as "${before.title}" and carry it through unchanged.`;
