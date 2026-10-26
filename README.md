@@ -122,3 +122,10 @@ starts holding work you can't recreate.
 Each agent needs three things: the board URL, its `X-Actor` id, and (if set) the `X-API-Key`.
 Hand it [AGENTS.md](AGENTS.md) — that file is written to be dropped straight into an agent's prompt or
 `CLAUDE.md`.
+
+## MCP server — the board as native tools
+
+`mcp/` is an MCP server: Claude Desktop, Claude Code, Cursor or any MCP client can
+list, read, create and update tasks, append notes and read the calendar as tools,
+through the gateway, with the same rules the board applies to everyone. Setup and
+the tool list are in [mcp/README.md](mcp/README.md).

@@ -17,7 +17,11 @@ in those files. Write the file and the board changes for everyone, live.
 | Your id | `007` (shows on the board as "Pookachu Bot") |
 | Humans | `toni` (Toni), `Adi` (Adi) |
 
-There are two ways in. Pick one:
+There are three ways in. Pick one:
+
+**0. MCP** — if the agent runs in an MCP client (Claude Desktop, Claude Code, Cursor), use the
+server in [`mcp/`](mcp/README.md): the loop below becomes native tools, and the rules below are
+enforced for you when `AGENT_ID` is set.
 
 **A. The board's own gateway** — simplest. The server holds the token, so the agent needs no
 GitHub credentials at all. Base URL is wherever the board is running (the Replit URL). If the

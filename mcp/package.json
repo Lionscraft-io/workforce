@@ -1,0 +1,15 @@
+{
+  "name": "pookiewookie-board-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for a PookieWookie board — work a markdown-in-git kanban as native tools from Claude, Cursor or any MCP client.",
+  "type": "module",
+  "bin": { "pookiewookie-board-mcp": "./server.js" },
+  "files": ["server.js", "README.md"],
+  "scripts": { "start": "node server.js", "test": "node --test" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "engines": { "node": ">=20.12" },
+  "license": "MIT"
+}
