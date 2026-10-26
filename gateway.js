@@ -178,11 +178,17 @@ async function readTaskText(file) {
 }
 
 // Agents with PMO rights may manage any task on the board, not only their own.
-// 007 (Pookachu Bot) runs PMO for the whole kanban (set by Adi/Toni, 2026-09-14).
-// Everyone else keeps the "own tasks only" rule. The structural guardrails
-// below — no deletes, no renames, no id changes — apply to every agent,
-// including PMO: accidental damage is exactly what this check catches.
-const PMO_AGENTS = new Set(['007']);
+// Set PMO_AGENTS to a comma-separated list of agent ids, e.g. "007,agent_x".
+// Unset or empty means no agent has PMO rights and every agent follows the
+// "own tasks only" rule — the safe default for a fresh install. The structural
+// guardrails below — no deletes, no renames, no id changes — apply to every
+// agent, including PMO: accidental damage is exactly what this check catches.
+const PMO_AGENTS = new Set(
+  (process.env.PMO_AGENTS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
 
 // Returns an error message when an agent may not make this write, else null.
 async function agentRefusal(agentId, file, method, nextText) {

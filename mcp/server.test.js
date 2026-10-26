@@ -87,7 +87,7 @@ before(async () => {
   fs.mkdirSync(scratch, { recursive: true });
   for (const [f, t] of Object.entries(seed)) fs.writeFileSync(path.join(scratch, f), t);
   gateway = spawn(process.execPath, [path.join(repoRoot, 'gateway.js')], {
-    env: { ...process.env, PORT: String(PORT), TASKS_DIR: scratchName, BOARD_SOURCE: 'local', BOARD_PASSWORD: '', GITHUB_TOKEN: '' },
+    env: { ...process.env, PORT: String(PORT), TASKS_DIR: scratchName, BOARD_SOURCE: 'local', BOARD_PASSWORD: '', GITHUB_TOKEN: '', PMO_AGENTS: '' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   for (let i = 0; i < 50; i++) {
@@ -217,4 +217,34 @@ test('refuses to write through a task whose file has two frontmatter blocks', as
   const r = await call(c, 'add_note', { id: 'LC-009', text: 'hello' });
   assert.equal(r.isError, true);
   assert.match(r.text, /two frontmatter blocks/);
+});
+
+test('a PMO agent may manage any task, but may still not rename', async () => {
+  const PMO_PORT = PORT - 1;
+  const pmo = spawn(process.execPath, [path.join(repoRoot, 'gateway.js')], {
+    env: { ...process.env, PORT: String(PMO_PORT), TASKS_DIR: scratchName, BOARD_SOURCE: 'local', BOARD_PASSWORD: '', GITHUB_TOKEN: '', PMO_AGENTS: '007' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  try {
+    for (let i = 0; i < 50; i++) {
+      try { if ((await fetch(`http://localhost:${PMO_PORT}/api/config`)).ok) break; } catch {}
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    const c = await connect({ BOARD_URL: `http://localhost:${PMO_PORT}`, AGENT_ID: '007' });
+
+    const theirs = await call(c, 'move_task', { id: 'LC-001', status: 'focus' });
+    assert.equal(theirs.isError, undefined, theirs.text);
+    assert.equal(theirs.data.status, 'focus', 'PMO may move a task assigned to someone else');
+
+    const rename = await call(c, 'update_task', { id: 'LC-001', title: 'Still not allowed' });
+    assert.equal(rename.isError, true, 'PMO still may not rename');
+    assert.match(rename.text, /do not rename/i);
+
+    // PMO is also exempt from the admin rule (db80636). Renames, id changes and
+    // deletes stay refused for every agent.
+    const admin = await call(c, 'move_task', { id: 'LC-003', status: 'review' });
+    assert.equal(admin.isError, undefined, 'PMO may manage admin tasks');
+  } finally {
+    pmo.kill();
+  }
 });
