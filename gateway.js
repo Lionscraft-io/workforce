@@ -30,7 +30,11 @@ try {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'docs');
-const PORT = process.env.PORT || 3000;
+// 4747 by default: 3000 collides with half the dev tools on a laptop. On
+// Replit, .replit maps 3000 → 80, so a Repl started without PORT set keeps
+// 3000 and the live deployment's port mapping still matches.
+const ON_REPLIT = Boolean(process.env.REPL_ID || process.env.REPLIT_DEPLOYMENT);
+const PORT = Number(process.env.PORT) || (ON_REPLIT ? 3000 : 4747);
 
 const REPO = {
   owner: process.env.REPO_OWNER || 'Lionscraft-io',

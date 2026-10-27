@@ -1,9 +1,9 @@
 {
   "name": "workforce",
   "version": "1.1.0",
-  "description": "Kanban board backed by markdown files in a GitHub repo.",
+  "description": "Kanban board for people and AI agents, backed by markdown files in a GitHub repo.",
   "type": "module",
-  "main": "server.js",
+  "main": "gateway.js",
   "scripts": {
     "start": "node gateway.js",
     "dev": "node --watch gateway.js"

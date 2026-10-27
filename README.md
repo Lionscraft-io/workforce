@@ -1,131 +1,86 @@
-# Workforce
+# PookieWookie
 
-A MeisterTask-style Kanban board that a human and a team of AI agents share. Zero npm dependencies —
-Node's standard library only, so it starts instantly anywhere (including Replit).
+A kanban board that people and AI agents share, with no database: every task is a markdown file in a
+GitHub repo, and every change is a git commit. The board UI, the calendar and the agents all work on
+the same files.
+
+![How PookieWookie fits together](documentation/architecture.svg)
+
+How the pieces fit, the data model, consistency and security: [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md).
+
+## Quick start
 
 ```bash
 npm start
 ```
 
-Then open http://localhost:3000
+Open **http://localhost:4747**. With no `GITHUB_TOKEN` set, the board reads and writes the `tasks/`
+folder on disk, so you can try everything without touching GitHub. Node 20.12 or newer, no
+`npm install` needed for the board itself.
 
-## What's in it
+To work against the repo instead, put a token in `.env` (`cp .env.example .env`). It needs
+**Contents: Read and write** on the repo and nothing else.
 
-- **Board** — coloured sections, drag & drop between and within sections, live task counts.
-- **Cards** — assignee, labels, due date, checklist, description (the agent brief), and a discussion thread.
-- **Team panel** (👥) — humans and agents, each with avatar, role, skills and current open-task count.
-  "Act as" switches who you're posting as from the browser.
-- **Activity feed** (⚡) — every create/move/claim/comment, by whom, click through to the card.
-- **Live sync** — every browser and agent sees changes immediately over Server-Sent Events.
-- **REST API** — everything above is scriptable. See [AGENTS.md](AGENTS.md).
+## What it does
 
-Sections out of the box: **Todo → Doing → Blocked → Done**.
+- **Board** — Backlog → Weekly → Focus → Review → Done, plus a human-only Admin column. Drag cards
+  between and within columns; one drag is one commit.
+- **Tasks** — assignee, due and start dates, labels, priority flag, subtasks and related tasks,
+  attachments by drag & drop, a markdown brief with dated notes underneath.
+- **Calendar** — every date any task carries: deadlines, multi-day spans, and extra events listed on a
+  task.
+- **Filters** — by person, label, priority, or free text. Archive finished work without deleting it.
+- **Phone** — one column per screen; press and hold a card to drag it.
+- **Lock** — optional single password for the whole board, entered once per browser.
+- **Agents** — anything that can make an HTTP call can work the board, under rules the gateway enforces.
 
-## Desktop
+## Configuration
 
-| Action | How |
-| --- | --- |
-| Add a task | `+` at the bottom of a section, Enter to save |
-| Move a task | drag the card |
-| Open a task | click it |
-| Set who's responsible | click the avatar on the card (or the Assignee field in the card) |
-| Rename a section | double-click its header |
-| Recolour / delete a section | right-click its header |
-| Add a section | `+` at the right edge of the board |
-| Close any panel | `Esc` |
+Environment variables only — `.env` locally, Secrets on Replit.
 
-## On a phone
-
-The board switches to a one-section-per-screen layout below 700 px.
-
-| Action | How |
-| --- | --- |
-| Change section | swipe sideways, or tap a section chip at the top |
-| Move a task | **press and hold** the card, then drag it onto a section chip |
-| Set who's responsible | tap the avatar on the card — picker slides up from the bottom |
-| Open a task | tap it (full-screen) |
-| Add a section | `+` at the end of the chip strip |
-
-Press-and-hold is required because browsers never fire HTML5 drag events on a
-touch screen — without it the board would be read-only on a phone.
-
-## Data
-
-The board has two interchangeable storage backends, chosen from the environment at startup:
-
-| Backend | When it's used | Good for |
+| Variable | Default | |
 | --- | --- | --- |
-| **File** (`data/board.json`) | default — no config | local dev, single machine |
-| **Postgres** (one row) | when `DATABASE_URL` is set | Replit, and **one shared database** for local + deployed |
+| `PORT` | `4747` (`3000` on Replit) | where the gateway listens |
+| `GITHUB_TOKEN` | — | fine-grained token, this repo only, Contents read and write. Without it: local mode or read-only |
+| `BOARD_PASSWORD` | — | one password for reading and writing through the gateway |
+| `PMO_AGENTS` | — | agent ids allowed to manage any task, e.g. `007` |
+| `REPO_OWNER` / `REPO_NAME` / `REPO_BRANCH` | `Lionscraft-io` / `workforce` / `main` | which repo holds the tasks |
+| `TASKS_DIR` | `tasks` | folder inside the repo |
+| `BOARD_SOURCE` | automatic | `local` or `github` to force one |
+| `MAX_UPLOAD_BYTES` | `5000000` | attachment size limit |
 
-Set `DATABASE_URL` to your Postgres connection string and the board uses Postgres instead of the file —
-no other change. To force one or the other regardless, set `BOARD_STORE=file` or `BOARD_STORE=postgres`.
-There is **no** silent fallback: if you asked for Postgres and it can't be reached, the server stops with
-a clear error rather than quietly writing to a throwaway local file.
+## Deploying on Replit
 
-### One database for local *and* Replit (no duplicates)
+1. **Create Repl → Import from GitHub** → this repository. `.replit` is already configured.
+2. **Secrets**: `GITHUB_TOKEN`, and `BOARD_PASSWORD` unless the URL stays private. Add `PMO_AGENTS`
+   if an agent should run the whole board.
+3. **Run**, then **Deploy → Reserved VM**.
 
-The point of Postgres here is that your local machine and the deployed Replit app can point at the **same**
-database, so there's a single source of truth:
-
-1. In Replit, add a **PostgreSQL** database (Tools → Database, or the Database tab). Replit provisions it
-   and exposes a `DATABASE_URL`.
-2. Copy that connection string into `.env` on your machine (`cp .env.example .env`, then paste). `.env` is
-   gitignored — the credential never goes near the repo, and you never paste it into chat.
-3. `npm install` once (pulls the single `postgres` package), then `npm start`. The startup banner prints
-   `storage: postgres`. Now local edits and the live site read and write the same board.
-
-### Durability details (both backends)
-
-Writes are coalesced over ~150 ms and forced through at least once a second during sustained activity;
-`SIGTERM`/`SIGINT` flush before exit, so a redeploy or Stop doesn't drop the last change. A file that is
-present but unreadable is renamed to `board.json.corrupt-<timestamp>` and the server refuses to start
-rather than reseeding over real data. `data/seed.json` is the board a fresh, empty store starts from.
-
-⚠️ `data/board.json` is gitignored, so your live board is not in the repo. **`data/seed.json` is in the
-repo and this repo is public** — whatever tasks are in the seed are readable by anyone. Replace the seed
-with generic examples if that isn't what you want. To snapshot your real board deliberately:
-`git add -f data/board.json`.
-
-## Running it without a local machine
-
-GitHub stores the code but cannot run it — GitHub Pages only serves static files, and this is a Node
-server. Two ways to get a working URL:
-
-**GitHub Codespaces** (inside GitHub, nothing installed locally): on the repo page press **Code →
-Codespaces → Create codespace on main**. `.devcontainer/devcontainer.json` starts the server and
-forwards port 3000 automatically. Under the **Ports** tab, set port 3000 to **Public** to get a URL
-that works on your phone. Codespaces stop when idle, so this is for working on it, not for hosting it.
-
-**Replit** (below) is the one to use for a board that stays up.
-
-## Deploying to Replit
-
-1. Create a Repl → **Import from GitHub** (`Lionscraft-io/workforce`).
-2. Add a **PostgreSQL** database (Tools → Database). Replit sets `DATABASE_URL` automatically; the app
-   picks it up and creates its table on first run.
-3. `.replit` is already set up: it runs `npm install` (for the `postgres` package) then `node server.js`,
-   port 3000 → 80.
-4. Press **Run**, then **Deploy** → **Reserved VM** (not Autoscale). `.replit` requests VM already:
-   this server keeps its live-update connections in memory, so it must be one always-on instance.
-5. In **Secrets**, set `API_KEY` to any random string. The server then rejects unauthenticated calls;
-   put the same value in the board's Team panel → *API access*, and give it to your agents as `X-API-Key`.
-
-⚠️ Without `API_KEY` set, a deployed board is world-writable by anyone with the URL.
-
-Even on a Reserved VM the file store is a single point of failure. `loadBoard`/`persistNow` in
-`server.js` are the only two functions that touch storage — swap them for Postgres when the board
-starts holding work you can't recreate.
+The Repl pulls from GitHub every time it starts, so a restart is all an update needs. If the token
+belongs to an organisation, it must be created under that organisation with a lifetime of at most 366
+days, or GitHub refuses it.
 
 ## Connecting agents
 
-Each agent needs three things: the board URL, its `X-Actor` id, and (if set) the `X-API-Key`.
-Hand it [AGENTS.md](AGENTS.md) — that file is written to be dropped straight into an agent's prompt or
-`CLAUDE.md`.
+| Agent runs in | Use | Docs |
+| --- | --- | --- |
+| Claude Code, Claude Desktop, Cursor, any MCP client | the MCP server in `mcp/` — eight native tools | [mcp/README.md](mcp/README.md) |
+| a bot, script or workflow that makes HTTP calls | the gateway API with `X-Agent-Id` | [BOT.md](BOT.md) |
 
-## MCP server — the board as native tools
+Agents finish work into **Review**; a person moves it to **Done**.
 
-`mcp/` is an MCP server: Claude Desktop, Claude Code, Cursor or any MCP client can
-list, read, create and update tasks, append notes and read the calendar as tools,
-through the gateway, with the same rules the board applies to everyone. Setup and
-the tool list are in [mcp/README.md](mcp/README.md).
+## Documentation
+
+| | |
+| --- | --- |
+| [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md) | components, data model, API, consistency, security, limitations |
+| [BOT.md](BOT.md) | the full brief for an agent working the board over HTTP |
+| [AGENTS.md](AGENTS.md) | short orientation for coding agents opening this repo |
+| [mcp/README.md](mcp/README.md) | MCP server setup and tools |
+| [tasks/README.md](tasks/README.md) | the task file format |
+
+## Tests
+
+```bash
+cd mcp && npm install && npm test
+```

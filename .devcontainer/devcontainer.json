@@ -1,17 +1,21 @@
 {
   "name": "Workforce board",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
-  "forwardPorts": [3000],
+  "forwardPorts": [
+    4747
+  ],
   "portsAttributes": {
-    "3000": {
+    "4747": {
       "label": "Workforce board",
       "onAutoForward": "openPreview"
     }
   },
-  "postAttachCommand": "node server.js",
+  "postAttachCommand": "node gateway.js",
   "customizations": {
     "vscode": {
-      "extensions": ["esbenp.prettier-vscode"]
+      "extensions": [
+        "esbenp.prettier-vscode"
+      ]
     }
   }
 }
