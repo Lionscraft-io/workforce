@@ -41,6 +41,7 @@ Environment variables only — `.env` locally, Secrets on Replit.
 | Variable | Default | |
 | --- | --- | --- |
 | `PORT` | `4747` (`3000` on Replit) | where the gateway listens |
+| `HOST` | all interfaces | `127.0.0.1` behind a reverse proxy, so the board is only reachable through its HTTPS |
 | `GITHUB_TOKEN` | — | fine-grained token, this repo only, Contents read and write. Without it: local mode or read-only |
 | `BOARD_PASSWORD` | — | one password for reading and writing through the gateway |
 | `PMO_AGENTS` | — | agent ids allowed to manage any task, e.g. `007` |

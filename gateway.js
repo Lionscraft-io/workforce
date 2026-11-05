@@ -35,6 +35,9 @@ const PUBLIC_DIR = path.join(__dirname, 'docs');
 // 3000 and the live deployment's port mapping still matches.
 const ON_REPLIT = Boolean(process.env.REPL_ID || process.env.REPLIT_DEPLOYMENT);
 const PORT = Number(process.env.PORT) || (ON_REPLIT ? 3000 : 4747);
+// Behind a reverse proxy, set HOST=127.0.0.1 so the board is reachable only
+// through the proxy's HTTPS. Unset, it listens on every interface as before.
+const HOST = process.env.HOST || undefined;
 
 const REPO = {
   owner: process.env.REPO_OWNER || 'Lionscraft-io',
@@ -537,8 +540,8 @@ function localCommit() {
   }
 }
 
-server.listen(PORT, () => {
-  console.log(`board gateway → http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`board gateway → http://${HOST || 'localhost'}:${PORT}`);
   console.log(`serving commit: ${localCommit()}`);
   console.log(`repo: ${REPO.owner}/${REPO.name}@${REPO.branch}/${REPO.dir}`);
   console.log(
